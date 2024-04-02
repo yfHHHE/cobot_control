@@ -3,19 +3,21 @@
 from utils_refactored import VideoController
 from pynput import keyboard
 def on_press(key):
-    global feedback_loop_control
+    video_controller = VideoController(video_source=0)
     try:
         if key.char == 'a':
-            VideoController.align_markers_by_z()
+            video_controller.align_markers_by_z([1,2])
         if key.char == 'w':
-            VideoController.move_forward(10)
+            video_controller.move_forward(10)
         if key.char == 's':
-            VideoController.move_forward(-10)
+            video_controller.move_forward(-10)
+        if key.char == 't':
+            print('a')
 
     except AttributeError:
-        # Handle special keys if necessary
+        # Handle special keys if necessarya
         pass
-
+    
 def on_release(key):
     if key == keyboard.Key.esc:
         # Stop listener

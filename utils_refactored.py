@@ -26,6 +26,8 @@ class VideoController:
 
 
     def align_markers_by_z(self,target_ids):
+        self.mc.send_angles([0,0,0,0,0,-50.5],30)
+        time.wait(1)
         while True:
             ret, frame = self.cap.read()
             if not ret:
@@ -57,9 +59,9 @@ class VideoController:
         # Example: determine direction based on difference of z-values
         z_diff = z_values[0] - z_values[1]
         if z_diff > 0:
-            return "move closer to marker with ID {target_ids[1]}"
+            return -1
         else:
-            return "move closer to marker with ID {target_ids[0]}"
+            return 1
     
     def send_adjustment(self,adjustment):
         angle = None
