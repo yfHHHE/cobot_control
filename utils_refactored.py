@@ -12,17 +12,24 @@ class VideoController:
             raise IOError("Could not open video source.")
 
     def process_frame(self):
+        detector = ArucoDetector()
         while True:
             ret, frame = self.cap.read()
             if not ret:
                 print("Failed to grab frame.")
                 break
             # Detect markers in the frame
+            corners, ids, _ = detector.detect_marker_corners(frame)
+        
+        # If markers are detected, draw them
+            if ids is not None:
+                detector.draw_marker(frame, corners, ids)
             markers = self.detector.detect_markers(frame)
-            if markers:
-                # Process detected markers...
-                print("Markers detected:", markers)
-                # Optionally, send commands to MyCobot based on detected markers
+            cv2.imshow('Live Video Feed', frame)
+
+            # Break the loop if 'q' is pressed
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
 
     def align_markers_by_z(self,target_ids):
