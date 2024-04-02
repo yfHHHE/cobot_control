@@ -7,6 +7,11 @@ def on_press(key):
     try:
         if key.char == 'a':
             VideoController.align_markers_by_z()
+        if key.char == 'w':
+            VideoController.move_forward(10)
+        if key.char == 's':
+            VideoController.move_forward(-10)
+
     except AttributeError:
         # Handle special keys if necessary
         pass

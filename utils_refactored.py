@@ -76,6 +76,18 @@ class VideoController:
         self.cap.release()
         cv2.destroyAllWindows()
 
+
+
+    def move_forward(self,distance):
+        coords= None
+        while not coords:
+            coords = self.mycobot.get_coords()
+            time.sleep(0.5)
+        
+        coords[0] += 10
+        self.mycobot.send_coords(coords,30,1)
+        time.sleep(2)
+
     
 
 # This version of VideoController initializes with a video source and creates instances of ArucoDetector and MyCobotController.
