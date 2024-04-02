@@ -3,7 +3,7 @@ import time
 
 baudrate=1000000
 mc = MyCobot('/dev/ttyTHS1', baudrate)
-mc.power_off()
+mc.power_on()
 # mc.send_angle(1,30,20)
 # time.sleep(3)
 # a = [0,0,0,0,0,-50]

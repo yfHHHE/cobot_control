@@ -2,11 +2,13 @@
 
 from utils_refactored import VideoController
 from pynput import keyboard
+
 video_controller = VideoController(video_source=0)
 def on_press(key):
     global video_controller
     try:
-        if key.char == 'a':
+        if key.char == 'b':
+            print("OFF")
             video_controller.align_markers_by_z([1,2])
         if key.char == 'w':
             video_controller.move_forward(10)
@@ -28,7 +30,8 @@ def main():
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()  # Start listening on a separate thread
     try:
-        video_controller.process_frame()
+        #video_controller.process_frame()
+        video_controller.align_markers_by_z([1,2])
     except KeyboardInterrupt:
         print("\nExiting application...")
     finally:
