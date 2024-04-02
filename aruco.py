@@ -35,6 +35,18 @@ class ArucoDetector:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
         return corners, ids, rejectedImgPoints
+    def detect_markers(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        markers = []
+        if ids is not None:
+            rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
+            for i, corner, tvec in zip(ids, corners, tvecs):
+                # tvec contains the translation vectors, where tvec[0][2] is the z-value (distance to the marker)
+                markers.append({'id': i[0], 'corners': corner[0], 'z': tvec[0][2]})
+        return markers
+
+
 
     def draw_marker(self, frame, corners, ids):
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
