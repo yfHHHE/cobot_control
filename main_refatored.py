@@ -2,8 +2,9 @@
 
 from utils_refactored import VideoController
 from pynput import keyboard
+video_controller = VideoController(video_source=0)
 def on_press(key):
-    video_controller = VideoController(video_source=0)
+    global video_controller
     try:
         if key.char == 'a':
             video_controller.align_markers_by_z([1,2])
@@ -23,7 +24,7 @@ def on_release(key):
         # Stop listener
         return False
 def main():
-    video_controller = VideoController(video_source=0)
+    global video_controller
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()  # Start listening on a separate thread
     try:
