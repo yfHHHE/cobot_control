@@ -29,7 +29,7 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     q_initial = R.from_euler('xyz', initial_euler_degrees, degrees=True).as_quat()
     
     # Quaternion representing the pitch rotation around the X-axis
-    q_pitch = R.from_euler('x', pitch_degrees, degrees=True).as_quat()
+    q_pitch = R.from_euler('y', pitch_degrees, degrees=True).as_quat()
     
     # Combine the initial orientation with the pitch rotation by quaternion multiplication
     q_combined = R.from_quat(q_pitch) * R.from_quat(q_initial)
@@ -40,8 +40,8 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     return new_euler_angles_deg
 
 
-na = apply_pitch_rotation(a, 20)
+na = apply_pitch_rotation(a, -20)
 
 b[-3:] = na
 
-mc.send_coords(b,20,0)
+#mc.send_coords(b,20,0)
