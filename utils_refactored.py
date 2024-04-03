@@ -4,42 +4,18 @@ from aruco import ArucoDetector
 from pymycobot.mycobot import MyCobot
 from cobot_controller_refactored import MyCobotController
 import time
-import threading
-class CameraFeed:
-    def __init__(self, source=0):
-        self.cap = cv2.VideoCapture(source)
-        self.latest_frame = None
-        self.ret = False
-        self.running = True
-        self.read_thread = threading.Thread(target=self.update_frame, daemon=True)
-        self.read_thread.start()
-
-    def update_frame(self):
-        while self.running:
-            self.ret, frame = self.cap.read()
-            if self.ret:
-                self.latest_frame = frame
-
-    def get_frame(self):
-        return self.ret, self.latest_frame
-
-    def stop(self):
-        self.running = False
-        self.read_thread.join()
-        self.cap.release()
+from camera_feed import CameraFeed
     
 class VideoController:
     def __init__(self, video_source=0):
         self.detector = ArucoDetector()
         self.mycobot = MyCobot('/dev/ttyTHS1', 1000000)
-        #self.cap = cv2.VideoCapture(video_source)
-        # if not self.cap.isOpened():
-        #     raise IOError("Could not open video source.")
+        self.camera_feed = CameraFeed(source=video_source)
 
     def process_frame(self):
         detector = ArucoDetector()
         while True:
-            ret, frame = self.cap.read()
+            ret, frame = self.camera_feed.get_frame()
             if not ret:
                 print("Failed to grab frame.")
                 break
@@ -49,7 +25,6 @@ class VideoController:
         # If markers are detected, draw them
             if ids is not None:
                 detector.draw_marker(frame, corners, ids)
-            markers = self.detector.detect_markers(frame)
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
@@ -59,15 +34,11 @@ class VideoController:
 
     def align_markers_by_z(self,target_ids):
         detector = ArucoDetector()
-        camera_feed = CameraFeed(source=0)
         self.mycobot.send_angles([0,0,0,0,0,-50.5],30)
-        retry_count = 0
-        # if not self.cap.isOpened():
-        #     raise IOError("Could not open video source.")
         time.sleep(3)
         while True:
             if self.is_machine_stable():
-                ret, frame = camera_feed.get_frame()
+                ret, frame = self.camera_feed.get_frame()
                 if not ret or frame is None:
                     print("Failed to grab frame.")
                     break
@@ -125,7 +96,7 @@ class VideoController:
 
 
     def release_resources(self):
-        #self.cap.release()
+        self.camera_feed.stop()
         cv2.destroyAllWindows()
 
 
