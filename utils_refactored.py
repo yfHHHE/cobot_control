@@ -12,6 +12,13 @@ class VideoController:
         self.mycobot = MyCobot('/dev/ttyTHS1', 1000000)
         self.camera_feed = CameraFeed(source=video_source)
 
+    def onoff(self):
+        if self.mycobot.is_power_on():
+            self.mycobot.power_off()
+        else:
+            self.mycobot.power_on()
+
+
     def process_frame(self):
         detector = ArucoDetector()
         while True:
@@ -46,7 +53,9 @@ class VideoController:
                 cv2.waitKey(1)
                 markers = detector.detect_markers(frame)
                 target_markers = [marker for marker in markers if marker['id'] in target_ids]
+                target_markers.sort(key=lambda marker: marker['id'])
                 print(target_markers)
+
                 if len(target_markers) == 2:
                     # Assuming markers have a .z attribute for depth
                     z_values = [marker['z'] for marker in target_markers]
@@ -65,7 +74,7 @@ class VideoController:
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
                 # cv2.imshow('Live Video Feed', frame)
-    def z_values_aligned(self, z_values, threshold=0.001):
+    def z_values_aligned(self, z_values, threshold=0.005):
         return abs(z_values[0] - z_values[1]) < threshold
     
     def is_machine_stable(self):
@@ -79,7 +88,7 @@ class VideoController:
         # Placeholder for adjustment logic
         # Example: determine direction based on difference of z-values
         z_diff = z_values[0] - z_values[1]
-        if z_diff > 0:
+        if z_diff < 0:
             return -1
         else:
             return 1

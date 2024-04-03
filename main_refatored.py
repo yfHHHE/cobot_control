@@ -2,6 +2,7 @@
 
 from utils_refactored import VideoController
 from pynput import keyboard
+import time
 
 video_controller = VideoController(video_source=0)
 def on_press(key):
@@ -16,6 +17,8 @@ def on_press(key):
             video_controller.move_forward(-10)
         if key.char == 't':
             print('a')
+        if key.char == 'o':
+            video_controller.onoff()
 
     except AttributeError:
         # Handle special keys if necessarya
@@ -30,6 +33,7 @@ def main():
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()  # Start listening on a separate thread
     try:
+        time.sleep(1)
         #video_controller.process_frame()
         video_controller.align_markers_by_z([1,2])
     except KeyboardInterrupt:

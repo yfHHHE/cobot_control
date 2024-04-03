@@ -57,7 +57,22 @@ class ArucoDetector:
                 average_tvec = self.get_average_tvec(id[0])
                 if average_tvec is not None:
                     cv2.drawFrameAxes(frame, self.mtx, self.dist, rvecs[i], tvecs[i], 0.01)
-                    x, y, z = average_tvec * 100
+                    R_j, _ = cv2.Rodrigues(rvecs[i])
+                    # Convert rotation matrix to Euler angles
+                    sy = math.sqrt(R_j[0,0] * R_j[0,0] +  R_j[1,0] * R_j[1,0])
+                    singular = sy < 1e-6
+                    if not singular:
+                        x = math.atan2(R_j[2,1] , R_j[2,2])
+                        y = math.atan2(-R_j[2,0], sy)
+                        z = math.atan2(R_j[1,0], R_j[0,0])
+                    else:
+                        x = math.atan2(-R_j[1,2], R_j[1,1])
+                        y = math.atan2(-R_j[2,0], sy)
+                        z = 0
+                    # Convert to degrees
+                    x = np.degrees(x)
+                    y = np.degrees(y)
+                    z = np.degrees(z)
                     
                     # Prepare texts for overlay, each coordinate on a separate line
                     overlay_texts = [
