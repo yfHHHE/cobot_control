@@ -58,7 +58,7 @@ class VideoController:
         rvecs_collected = []
         frames_processed = 0
         consecutive_failures = 0  # Counter for consecutive None rvecs
-
+        time.sleep(1)
         while frames_processed < 10 and consecutive_failures < 10:
             ret, frame = self.camera_feed.get_frame()
             if not ret:
@@ -85,6 +85,7 @@ class VideoController:
         a = None
         while not a:
             a = self.mycobot.get_coords()
+            time.sleep(0.5)
         cur_euler = a[-3:]
         print(cur_euler)
         new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)

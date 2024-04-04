@@ -1,18 +1,18 @@
-from pymycobot.mycobot import MyCobot
-import time
+# from pymycobot.mycobot import MyCobot
+# import time
 
-baudrate=1000000
-mc = MyCobot('/dev/ttyTHS1', baudrate)
-# mc.power_off()
-# #mc.send_angles([0,0,0,40,0,-50],20)
-# # time.sleep(3)
-# # a = [0,0,0,0,0,-50]
-# # mc.send_angles(a,20)
-mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
-# time.sleep(1)
-b = mc.get_coords()
-print(b)
-# a = b[-3:]
+# baudrate=1000000
+# mc = MyCobot('/dev/ttyTHS1', baudrate)
+# # mc.power_off()
+# # #mc.send_angles([0,0,0,40,0,-50],20)
+# # # time.sleep(3)
+# # # a = [0,0,0,0,0,-50]
+# # # mc.send_angles(a,20)
+# mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
+# # time.sleep(1)
+# b = mc.get_coords()
+# print(b)
+# # a = b[-3:]
 from scipy.spatial.transform import Rotation as R
 
 def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
