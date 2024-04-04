@@ -41,7 +41,6 @@ class VideoController:
             # Break the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        cv2.imshow('Live Video Feed', frame)
 
     def align_cam(self, target_id):
         """
