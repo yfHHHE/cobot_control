@@ -9,6 +9,7 @@ def on_press(key):
     global video_controller
     try:
         if key.char == 'b':
+            video_controller.stop_processing_frame() 
             print("OFF")
             video_controller.align_markers_by_z([1,2])
         if key.char == 'w':
@@ -34,8 +35,8 @@ def main():
     listener.start()  # Start listening on a separate thread
     try:
         time.sleep(1)
-        #video_controller.process_frame()
-        video_controller.align_markers_by_z([1,2])
+        video_controller.process_frame()
+        #video_controller.align_markers_by_z([1,2])
     except KeyboardInterrupt:
         print("\nExiting application...")
     finally:

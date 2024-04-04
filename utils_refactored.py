@@ -11,6 +11,7 @@ class VideoController:
         self.detector = ArucoDetector()
         self.mycobot = MyCobot('/dev/ttyTHS1', 1000000)
         self.camera_feed = CameraFeed(source=video_source)
+        self.active = True
 
     def onoff(self):
         if self.mycobot.is_power_on():
@@ -18,10 +19,12 @@ class VideoController:
         else:
             self.mycobot.power_on()
 
+    def stop_processing_frame(self):
+        self.active = False
 
     def process_frame(self):
         detector = ArucoDetector()
-        while True:
+        while self.active:
             ret, frame = self.camera_feed.get_frame()
             if not ret:
                 print("Failed to grab frame.")
@@ -74,6 +77,8 @@ class VideoController:
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
                 # cv2.imshow('Live Video Feed', frame)
+        self.active = True
+        self.process_frame()
     def z_values_aligned(self, z_values, threshold=0.005):
         return abs(z_values[0] - z_values[1]) < threshold
     
