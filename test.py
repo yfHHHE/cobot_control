@@ -3,15 +3,16 @@ import time
 
 baudrate=1000000
 mc = MyCobot('/dev/ttyTHS1', baudrate)
-mc.power_off()
-#mc.send_angles([0,0,0,40,0,-50],20)
-# time.sleep(3)
-# a = [0,0,0,0,0,-50]
-# mc.send_angles(a,20)
-#mc.send_coords([87.2, -63.5, 361.4, -300, 45, 90],20,1)
-time.sleep(1)
+# mc.power_off()
+# #mc.send_angles([0,0,0,40,0,-50],20)
+# # time.sleep(3)
+# # a = [0,0,0,0,0,-50]
+# # mc.send_angles(a,20)
+mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
+# time.sleep(1)
 b = mc.get_coords()
-a = b[-3:]
+print(b)
+# a = b[-3:]
 from scipy.spatial.transform import Rotation as R
 
 def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
@@ -59,8 +60,8 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     return new_euler_angles_deg
 
 
-na = apply_pitch_rotation(a, -20)
+#na = apply_pitch_rotation(a, -20)
 
-b[-3:] = na
+#b[-3:] = na
 
 #mc.send_coords(b,20,0)

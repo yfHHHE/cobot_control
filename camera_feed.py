@@ -13,11 +13,11 @@ class CameraFeed:
     def update_frame(self):
         while self.running:
             self.ret, frame = self.cap.read()
+            frame = self.preprocess_frame_for_detection(frame)
             if self.ret:
                 self.latest_frame = frame
 
     def get_frame(self):
-        self.latest_frame = self.preprocess_frame_for_detection(self.latest_frame)
         return self.ret, self.latest_frame
 
     def stop(self):

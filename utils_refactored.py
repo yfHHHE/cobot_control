@@ -41,6 +41,7 @@ class VideoController:
             # Break the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+        cv2.imshow('Live Video Feed', frame)
 
     def align_cam(self, target_id):
         """
@@ -79,11 +80,13 @@ class VideoController:
             return None
         else:
             average_rvec = np.mean(rvecs_collected, axis=0)
+            print(average_rvec)
         
         a = None
         while not a:
             a = self.mycobot.get_coords()
         cur_euler = a[-3:]
+        print(cur_euler)
         new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)
         print(new_euler)
 
