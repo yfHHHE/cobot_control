@@ -12,6 +12,10 @@ def on_press(key):
             video_controller.stop_processing_frame() 
             print("OFF")
             video_controller.align_markers_by_z([1,2])
+        if key.char == 'n':
+            video_controller.stop_processing_frame()
+            id = input("Which id") 
+            video_controller.align_cam(id)
         if key.char == 'w':
             video_controller.move_forward(10)
         if key.char == 's':

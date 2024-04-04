@@ -46,7 +46,27 @@ class ArucoDetector:
                 markers.append({'id': i[0], 'corners': corner[0], 'z': tvec[0][2]})
         return markers
 
-
+    def get_rvec_of_marker(self, frame, target_id):
+        """
+        Detects ArUco markers in the given frame and returns the rotation vector (rvec)
+        of the marker with the specified ID.
+        
+        Parameters:
+        - frame: The frame to detect the ArUco marker in.
+        - target_id: The ID of the ArUco marker to find the rvec for.
+        
+        Returns:
+        - The rotation vector (rvec) of the specified ArUco marker, if found. Otherwise, returns None.
+        """
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        
+        if ids is not None:
+            rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
+            for i, marker_id in enumerate(ids.flatten()):
+                if marker_id == target_id:
+                    return rvecs[i]  # Return the rotation vector of the specified marker
+        return None
 
     def draw_marker(self, frame, corners, ids):
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)

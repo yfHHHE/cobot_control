@@ -5,7 +5,8 @@ from pymycobot.mycobot import MyCobot
 from cobot_controller_refactored import MyCobotController
 import time
 from camera_feed import CameraFeed
-    
+import numpy as np
+from test import adjust_robot_arm_orientation
 class VideoController:
     def __init__(self, video_source=0):
         self.detector = ArucoDetector()
@@ -41,7 +42,53 @@ class VideoController:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
+    def align_cam(self, target_id):
+        """
+        Collects rvecs from the target ArUco marker over 10 frames and calculates their average.
+        Breaks the loop if the target marker's rvec is None in ten consecutive frames.
+        
+        Parameters:
+        - target_id: The ID of the target ArUco marker.
+        
+        Returns:
+        - The average rvec of the target marker over 10 valid frames, or None if the marker 
+          is not detected or consistently not detected in 10 consecutive frames.
+        """
+        rvecs_collected = []
+        frames_processed = 0
+        consecutive_failures = 0  # Counter for consecutive None rvecs
 
+        while frames_processed < 10 and consecutive_failures < 10:
+            ret, frame = self.camera_feed.get_frame()
+            if not ret:
+                print("Failed to grab frame.")
+                continue
+            rvec = self.detector.get_rvec_of_marker(frame, target_id)
+            if rvec is not None:
+                rvecs_collected.append(rvec[0])  # Assuming rvec[0] because rvec is returned as a 3x1 array
+                frames_processed += 1
+                consecutive_failures = 0  # Reset the failure counter on success
+            else:
+                consecutive_failures += 1  # Increment the failure counter
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):  # Allows for quitting the loop with 'q' key
+                break
+
+        if frames_processed < 10:
+            print("Target marker not detected in 10 frames or detected inconsistently.")
+            return None
+        else:
+            average_rvec = np.mean(rvecs_collected, axis=0)
+        
+        a = None
+        while not a:
+            a = self.mycobot.get_coords()
+        cur_euler = a[-3:]
+        new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)
+        print(new_euler)
+
+
+        
     def align_markers_by_z(self,target_ids):
         detector = ArucoDetector()
         self.mycobot.send_angles([0,0,0,0,0,-50.5],30)

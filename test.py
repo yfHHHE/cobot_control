@@ -14,6 +14,25 @@ b = mc.get_coords()
 a = b[-3:]
 from scipy.spatial.transform import Rotation as R
 
+def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
+    # Convert marker's rotation vector to a quaternion
+    marker_quat = R.from_rotvec(marker_rvec).as_quat()
+    
+    # Convert the robot arm's current orientation from Euler angles to a quaternion
+    arm_quat = R.from_euler('zyx', arm_euler_deg, degrees=True).as_quat()
+    
+    # Calculate the adjustment needed by combining the marker's orientation with the
+    # inverse of the arm's current orientation
+    adjustment_quat = R.from_quat(marker_quat) * R.from_quat(arm_quat).inv()
+    
+    # Calculate the new arm orientation by applying the adjustment to the arm's current orientation
+    new_arm_quat = adjustment_quat * R.from_quat(arm_quat)
+    
+    # Convert the new arm orientation back to Euler angles for the robot arm control
+    new_arm_euler_deg = new_arm_quat.as_euler('zyx', degrees=True)
+    
+    return new_arm_euler_deg
+
 def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     """
     Apply a pitch rotation to the initial orientation defined by Euler angles.
