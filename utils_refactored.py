@@ -48,6 +48,7 @@ class VideoController:
             key = cv2.waitKey(1) & 0xFF
         
             if key == ord('o'):  # Start processing
+                self.active=False
                 break
             cv2.imshow('Live Video Feed', frame)
 

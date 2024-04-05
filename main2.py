@@ -21,7 +21,9 @@ def main():
             print(1)
             video_controller.stop_processing_frame()
             print(1)
-            video_controller.align_cam(4)
+            video_controller.align_cam(3)
+        elif key == ord('m'):  # Quit program
+            video_controller.onoff()
     
     video_controller.release_resources()
     cv2.destroyAllWindows()

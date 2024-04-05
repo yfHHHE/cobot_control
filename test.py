@@ -1,14 +1,12 @@
-# from pymycobot.mycobot import MyCobot
-# import time
+from pymycobot.mycobot import MyCobot
+import time
+#
 
-# baudrate=1000000
-# mc = MyCobot('/dev/ttyTHS1', baudrate)
-# # mc.power_off()
 # # #mc.send_angles([0,0,0,40,0,-50],20)
 # # # time.sleep(3)
 # # # a = [0,0,0,0,0,-50]
 # # # mc.send_angles(a,20)
-# mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
+#mc.send_coords([179.2, -33.3, 294.6, -118.3, -48, -21],20,1)
 # # time.sleep(1)
 # b = mc.get_coords()
 # print(b)
@@ -24,7 +22,7 @@ def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
     desired_quat = R.from_euler('xyz', [180, 0, 0], degrees=True).as_quat()
 
     # Calculate the rotation needed to align the ArUco code with the desired orientation
-    rotation_needed = R.from_quat(desired_quat) * R.from_quat(aruco_quat).inv()
+    rotation_needed = R.from_quat(desired_quat) * R.from_quat(aruco_quat)
 
     # Apply this rotation to the robot arm's current orientation
     robot_arm_quat = R.from_euler('xyz', robot_arm_euler, degrees=True).as_quat()
@@ -66,3 +64,6 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
 #b[-3:] = na
 
 #mc.send_coords(b,20,0)
+
+b = 2.8/3.14*180
+print(b)
