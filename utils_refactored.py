@@ -104,7 +104,7 @@ class VideoController:
         print(new_euler)
 
 
-        
+    def g
     def align_markers_by_z(self,target_ids):
         detector = ArucoDetector()
         self.mycobot.send_angles([0,0,0,0,0,-50.5],30)
