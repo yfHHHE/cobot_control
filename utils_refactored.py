@@ -7,21 +7,29 @@ import time
 from camera_feed import CameraFeed
 import numpy as np
 from test import adjust_robot_arm_orientation
+import threading
 class VideoController:
     def __init__(self, video_source=0):
         self.detector = ArucoDetector()
         self.mycobot = MyCobot('/dev/ttyTHS1', 1000000)
         self.camera_feed = CameraFeed(source=video_source)
-        self.active = True
+        self.thread = None
+        self.active = False
 
     def onoff(self):
         if self.mycobot.is_power_on():
             self.mycobot.power_off()
         else:
             self.mycobot.power_on()
-
+    def start_processing_frame(self):
+        if not self.active:
+            self.active = True
+            self.thread = threading.Thread(target=self.process_frame)
+            self.thread.start()
     def stop_processing_frame(self):
         self.active = False
+        if self.thread is not None:
+            self.thread.join()
 
     def process_frame(self):
         detector = ArucoDetector()
