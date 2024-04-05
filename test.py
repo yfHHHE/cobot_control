@@ -14,25 +14,26 @@
 # print(b)
 # # a = b[-3:]
 from scipy.spatial.transform import Rotation as R
-
+import numpy as np
 def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
-    # Convert marker's rotation vector to a quaternion
-    marker_quat = R.from_rotvec(marker_rvec).as_quat()
-    
-    # Convert the robot arm's current orientation from Euler angles to a quaternion
-    arm_quat = R.from_euler('zyx', arm_euler_deg, degrees=True).as_quat()
-    
-    # Calculate the adjustment needed by combining the marker's orientation with the
-    # inverse of the arm's current orientation
-    adjustment_quat = R.from_quat(marker_quat) * R.from_quat(arm_quat).inv()
-    
-    # Calculate the new arm orientation by applying the adjustment to the arm's current orientation
-    new_arm_quat = adjustment_quat * R.from_quat(arm_quat)
-    
-    # Convert the new arm orientation back to Euler angles for the robot arm control
-    new_arm_euler_deg = new_arm_quat.as_euler('zyx', degrees=True)
-    
-    return new_arm_euler_deg
+    aruco_euler = np.array(marker_rvec)  # Detected ArUco code orientation
+    robot_arm_euler = np.array(arm_euler_deg)  # Robot arm orientation
+
+    # Convert to quaternions
+    aruco_quat = R.from_rotvec(aruco_euler).as_quat()
+    desired_quat = R.from_euler('xyz', [180, 0, 0], degrees=True).as_quat()
+
+    # Calculate the rotation needed to align the ArUco code with the desired orientation
+    rotation_needed = R.from_quat(desired_quat) * R.from_quat(aruco_quat).inv()
+
+    # Apply this rotation to the robot arm's current orientation
+    robot_arm_quat = R.from_euler('xyz', robot_arm_euler, degrees=True).as_quat()
+    new_robot_arm_quat = rotation_needed * R.from_quat(robot_arm_quat)
+
+    # Convert the new robot arm orientation back to Euler angles
+    new_robot_arm_euler = R.from_quat(new_robot_arm_quat.as_quat()).as_euler('xyz', degrees=True)
+
+    return new_robot_arm_euler
 
 def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     """
