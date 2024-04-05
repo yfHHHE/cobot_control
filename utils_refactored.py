@@ -24,12 +24,13 @@ class VideoController:
     def start_processing_frame(self):
         if not self.active:
             self.active = True
-            self.thread = threading.Thread(target=self.process_frame)
-            self.thread.start()
+            # self.thread = threading.Thread(target=self.process_frame)
+            # self.thread.start()
+            self.process_frame()
     def stop_processing_frame(self):
         self.active = False
-        if self.thread is not None:
-            self.thread.join()
+        # if self.thread is not None:
+        #     self.thread.join()
 
     def process_frame(self):
         detector = ArucoDetector()
@@ -44,11 +45,14 @@ class VideoController:
         # If markers are detected, draw them
             if ids is not None:
                 detector.draw_marker(frame, corners, ids)
+            key = cv2.waitKey(1) & 0xFF
+        
+            if key == ord('o'):  # Start processing
+                break
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+
 
     def align_cam(self, target_id):
         """

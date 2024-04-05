@@ -18,8 +18,10 @@ def main():
         elif key == ord('q'):  # Quit program
             break
         elif key == ord('n'):  # Quit program
+            print(1)
             video_controller.stop_processing_frame()
-            video_controller.align_cam()
+            print(1)
+            video_controller.align_cam(4)
     
     video_controller.release_resources()
     cv2.destroyAllWindows()
