@@ -32,8 +32,8 @@ class ArucoDetector:
         return None
 
     def detect_marker_corners(self, frame):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame, self.aruco_dict, parameters=self.parameters)
         return corners, ids, rejectedImgPoints
     def detect_markers(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -58,8 +58,8 @@ class ArucoDetector:
         Returns:
         - The rotation vector (rvec) of the specified ArUco marker, if found. Otherwise, returns None.
         """
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame, self.aruco_dict, parameters=self.parameters)
         
         if ids is not None:
             rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
@@ -101,8 +101,9 @@ class ArucoDetector:
                         f"Z: {z:.2f}cm"
                     ]
                     
+                    
                     # Get the bottom left corner of the current marker
-                    bottom_left_corner = tuple(corners[i][0][0].astype(int))
+                    bottom_left_corner = tuple(corners[i][0][3].astype(int))
                     
                     # Starting position for the text, adjust as necessary to avoid overlay on the marker
                     text_position = (bottom_left_corner[0] + 20, bottom_left_corner[1] - 10)

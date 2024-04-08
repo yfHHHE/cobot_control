@@ -8,6 +8,8 @@ from camera_feed import CameraFeed
 import numpy as np
 from test import adjust_robot_arm_orientation
 import threading
+from scipy.spatial.transform import Rotation as R
+import math
 class VideoController:
     def __init__(self, video_source=0):
         self.detector = ArucoDetector()
@@ -48,6 +50,7 @@ class VideoController:
             key = cv2.waitKey(1) & 0xFF
         
             if key == ord('o'):  # Start processing
+        
                 self.active=False
                 break
             cv2.imshow('Live Video Feed', frame)
@@ -92,16 +95,43 @@ class VideoController:
             return None
         else:
             average_rvec = np.mean(rvecs_collected, axis=0)
-            print(average_rvec)
-        
-        a = None
-        while not a:
-            a = self.mycobot.get_coords()
-            time.sleep(0.5)
-        cur_euler = a[-3:]
-        print(cur_euler)
-        new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)
-        print(new_euler)
+            rotation_matrix, _ = cv2.Rodrigues(average_rvec)
+            rotation = R.from_matrix(rotation_matrix)
+            R_j , _ = cv2.Rodrigues(average_rvec)
+            # Convert rotation matrix to Euler angles
+            sy = math.sqrt(R_j[0,0] * R_j[0,0] +  R_j[1,0] * R_j[1,0])
+            singular = sy < 1e-6
+            if not singular:
+                x = math.atan2(R_j[2,1] , R_j[2,2])
+                y = math.atan2(-R_j[2,0], sy)
+                z = math.atan2(R_j[1,0], R_j[0,0])
+            else:
+                x = math.atan2(-R_j[1,2], R_j[1,1])
+                y = math.atan2(-R_j[2,0], sy)
+                z = 0
+            # Convert to degrees
+            x = np.degrees(x)
+            y = np.degrees(y)
+            z = np.degrees(z)
+            euler_angles_deg = rotation.as_euler('xyz', degrees=True)
+            print(np.degrees(average_rvec))
+            print("Euler angles (degrees):", euler_angles_deg)
+            print(x,y,z)
+            co=self.mycobot.get_coords()
+            ang = co[-3:]
+            iinput = input("?").strip()
+            if iinput=='y':
+                nang = adjust_robot_arm_orientation(average_rvec,ang)
+                co[-3:]=nang
+                self.mycobot.send_coords(co,20,0)
+        # a = None
+        # while not a:
+        #     a = self.mycobot.get_coords()
+        #     time.sleep(0.5)
+        # cur_euler = a[-3:]
+        # print(cur_euler)
+        # new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)
+        # print(new_euler)
 
 
     def g

@@ -26,28 +26,21 @@ class CameraFeed:
         self.cap.release()
 
     def preprocess_frame_for_detection(self, frame):
-        """
-        Applies pre-processing techniques to the frame to reduce noise
-        and enhance marker detection stability.
+        grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+        # Apply mild Gaussian Blur to reduce noise while preserving edges
+        blurred = cv2.GaussianBlur(grayscale, (3, 3), 0)
         
-        Parameters:
-            frame (numpy.ndarray): The original video frame.
+        # Enhance edges using adaptive thresholding
+        # sharp_edges = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+        #                                     cv2.THRESH_BINARY, 11, 5)
         
-        Returns:
-            numpy.ndarray: The pre-processed video frame.
-        """
-        # Apply Gaussian Blur to smooth the image
-        # Note: You might need to adjust the kernel size (5, 5) and sigma (0) based on your specific requirements
-        blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+        # Optional: Enhance contrast using CLAHE
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        contrast_enhanced = clahe.apply(blurred)
         
-        # Apply bilateral filter to reduce noise while keeping edges sharp
-        # Note: You might need to adjust the filter parameters based on your specific requirements
-        filtered = cv2.bilateralFilter(blurred, 9, 75, 75)
-        
-        # Enhance contrast if needed (optional, based on your environment's lighting conditions)
-        # Convert to YUV and equalize the histogram of the Y channel
-        yuv = cv2.cvtColor(filtered, cv2.COLOR_BGR2YUV)
-        yuv[:,:,0] = cv2.equalizeHist(yuv[:,:,0])
-        contrast_enhanced = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-        
+        # Note: The following step of Canny edge detection is shown as an illustrative option.
+        # It might not be directly beneficial for ArUco detection as it produces an edge map, not a grayscale image.
+        # edges = cv2.Canny(contrast_enhanced, 100, 200)
+    
         return contrast_enhanced

@@ -1,39 +1,28 @@
 from pymycobot.mycobot import MyCobot
 import time
-#
-
-# # #mc.send_angles([0,0,0,40,0,-50],20)
-# # # time.sleep(3)
-# # # a = [0,0,0,0,0,-50]
-# # # mc.send_angles(a,20)
-#mc.send_coords([179.2, -33.3, 294.6, -118.3, -48, -21],20,1)
-# # time.sleep(1)
-# b = mc.get_coords()
-# print(b)
-# # a = b[-3:]
 from scipy.spatial.transform import Rotation as R
 import numpy as np
+import cv2
 def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
-    aruco_euler = np.array(marker_rvec)  # Detected ArUco code orientation
-    robot_arm_euler = np.array(arm_euler_deg)  # Robot arm orientation
+    rotation_matrix, _ = cv2.Rodrigues(marker_rvec)
 
-    # Convert to quaternions
-    aruco_quat = R.from_rotvec(aruco_euler).as_quat()
-    desired_quat = R.from_euler('xyz', [180, 0, 0], degrees=True).as_quat()
+# Create a Rotation object from the rotation matrix
+    rotation = R.from_matrix(rotation_matrix)
+    euler_angles_deg = rotation.as_euler('xyz', degrees=True)
+    pitch = euler_angles_deg[0]
+    yaw = euler_angles_deg[1]
+    roll = euler_angles_deg[2]
 
-    # Calculate the rotation needed to align the ArUco code with the desired orientation
-    rotation_needed = R.from_quat(desired_quat) * R.from_quat(aruco_quat)
+    if pitch > 0:
+        result = pitch - 180
+    else:
+        result = pitch + 180
+    ans = apply_pitch_rotation(arm_euler_deg,-yaw,3)
+    ans = apply_pitch_rotation(ans,roll,2)
+    ans = apply_pitch_rotation(ans,-result)
+    return ans
 
-    # Apply this rotation to the robot arm's current orientation
-    robot_arm_quat = R.from_euler('xyz', robot_arm_euler, degrees=True).as_quat()
-    new_robot_arm_quat = rotation_needed * R.from_quat(robot_arm_quat)
-
-    # Convert the new robot arm orientation back to Euler angles
-    new_robot_arm_euler = R.from_quat(new_robot_arm_quat.as_quat()).as_euler('xyz', degrees=True)
-
-    return new_robot_arm_euler
-
-def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
+def apply_pitch_rotation(initial_euler_degrees, pitch_degrees,ax=1):
     """
     Apply a pitch rotation to the initial orientation defined by Euler angles.
     
@@ -47,8 +36,13 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     # Convert initial Euler angles to quaternion
     q_initial = R.from_euler('xyz', initial_euler_degrees, degrees=True).as_quat()
     
+    if ax==1:
     # Quaternion representing the pitch rotation around the X-axis
-    q_pitch = R.from_euler('y', pitch_degrees, degrees=True).as_quat()
+        q_pitch = R.from_euler('y', pitch_degrees, degrees=True).as_quat()
+    if ax == 2:
+        q_pitch = R.from_euler('x', pitch_degrees, degrees=True).as_quat()
+    if ax == 3:
+        q_pitch = R.from_euler('z', pitch_degrees, degrees=True).as_quat()
     
     # Combine the initial orientation with the pitch rotation by quaternion multiplication
     q_combined = R.from_quat(q_pitch) * R.from_quat(q_initial)
@@ -58,12 +52,22 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees):
     
     return new_euler_angles_deg
 
+if __name__ == "__main__":
+    baudrate=1000000
+    mc = MyCobot('/dev/ttyTHS1', baudrate)
 
-#na = apply_pitch_rotation(a, -20)
+    # # # #mc.send_angles([0,0,0,40,0,-50],20)
+    # # # # time.sleep(3)
+    # # # # a = [0,0,0,0,0,-50]
+    # # # # mc.send_angles(a,20)
+    # # mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
+    # # # time.sleep(1)
+    b = mc.get_coords()
+    print(b)
+    a = b[-3:]
 
-#b[-3:] = na
+    na = apply_pitch_rotation(a, 30,3)
 
-#mc.send_coords(b,20,0)
+    b[-3:] = na
 
-b = 2.8/3.14*180
-print(b)
+    mc.send_coords(b,20,0)
