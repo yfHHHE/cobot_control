@@ -57,8 +57,14 @@ class VideoController:
 
             # Break the loop if 'q' is pressed
 
+    def align_cam(self,target_id):
+        self.align_cam_1d(target_id,1)
+        time.sleep(3)
+        self.align_cam_1d(target_id,3)
+        time.sleep(3)
+        self.align_cam_1d(target_id,2)
 
-    def align_cam(self, target_id):
+    def align_cam_1d(self, target_id,ax):
         """
         Collects rvecs from the target ArUco marker over 10 frames and calculates their average.
         Breaks the loop if the target marker's rvec is None in ten consecutive frames.
@@ -97,33 +103,18 @@ class VideoController:
             average_rvec = np.mean(rvecs_collected, axis=0)
             rotation_matrix, _ = cv2.Rodrigues(average_rvec)
             rotation = R.from_matrix(rotation_matrix)
-            R_j , _ = cv2.Rodrigues(average_rvec)
-            # Convert rotation matrix to Euler angles
-            sy = math.sqrt(R_j[0,0] * R_j[0,0] +  R_j[1,0] * R_j[1,0])
-            singular = sy < 1e-6
-            if not singular:
-                x = math.atan2(R_j[2,1] , R_j[2,2])
-                y = math.atan2(-R_j[2,0], sy)
-                z = math.atan2(R_j[1,0], R_j[0,0])
-            else:
-                x = math.atan2(-R_j[1,2], R_j[1,1])
-                y = math.atan2(-R_j[2,0], sy)
-                z = 0
-            # Convert to degrees
-            x = np.degrees(x)
-            y = np.degrees(y)
-            z = np.degrees(z)
             euler_angles_deg = rotation.as_euler('xyz', degrees=True)
             print(np.degrees(average_rvec))
             print("Euler angles (degrees):", euler_angles_deg)
-            print(x,y,z)
-            co=self.mycobot.get_coords()
-            ang = co[-3:]
-            iinput = input("?").strip()
-            if iinput=='y':
-                nang = adjust_robot_arm_orientation(average_rvec,ang)
+            if input("?") == 'y':
+                co = None
+                while co is None:
+                    co=self.mycobot.get_coords()
+                ang = co[-3:]
+                nang = adjust_robot_arm_orientation(average_rvec,ang,ax)
                 co[-3:]=nang
-                self.mycobot.send_coords(co,20,0)
+                print(co)
+                self.mycobot.send_coords(co,20,1)
         # a = None
         # while not a:
         #     a = self.mycobot.get_coords()

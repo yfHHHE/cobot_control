@@ -3,7 +3,7 @@ import time
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 import cv2
-def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
+def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg,ax):
     rotation_matrix, _ = cv2.Rodrigues(marker_rvec)
 
 # Create a Rotation object from the rotation matrix
@@ -17,9 +17,12 @@ def adjust_robot_arm_orientation(marker_rvec, arm_euler_deg):
         result = pitch - 180
     else:
         result = pitch + 180
-    ans = apply_pitch_rotation(arm_euler_deg,-yaw,3)
-    ans = apply_pitch_rotation(ans,roll,2)
-    ans = apply_pitch_rotation(ans,-result)
+    if ax == 1:
+        ans = apply_pitch_rotation(arm_euler_deg,-result)
+    elif ax == 2:
+        ans = apply_pitch_rotation(arm_euler_deg,roll,2)
+    elif ax == 3:
+        ans = apply_pitch_rotation(arm_euler_deg,-yaw,3)
     return ans
 
 def apply_pitch_rotation(initial_euler_degrees, pitch_degrees,ax=1):
