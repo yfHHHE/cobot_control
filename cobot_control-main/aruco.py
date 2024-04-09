@@ -4,7 +4,7 @@ import math
 
 class ArucoDetector:
     def __init__(self):
-        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_100)
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_100)
         self.parameters = cv2.aruco.DetectorParameters()
         self.parameters.adaptiveThreshWinSizeMin = 3
         self.parameters.adaptiveThreshWinSizeMax = 23
@@ -15,7 +15,7 @@ class ArucoDetector:
         d = np.array([[0.02206642, 0.20438685, -0.00633739, -0.00140045, -0.85132748]])
         self.mtx = k
         self.dist = d
-        self.marker_size = 0.025  # Adjusted to be consistent with estimation call
+        self.marker_size = 0.02  # Adjusted to be consistent with estimation call
         self.tvecs_buffers = {}
         self.buffer_size = 10
 
@@ -32,8 +32,8 @@ class ArucoDetector:
         return None
 
     def detect_marker_corners(self, frame):
-        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame, self.aruco_dict, parameters=self.parameters)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
         return corners, ids, rejectedImgPoints
     def detect_markers(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -46,27 +46,7 @@ class ArucoDetector:
                 markers.append({'id': i[0], 'corners': corner[0], 'z': tvec[0][2]})
         return markers
 
-    def get_rvec_of_marker(self, frame, target_id):
-        """
-        Detects ArUco markers in the given frame and returns the rotation vector (rvec)
-        of the marker with the specified ID.
-        
-        Parameters:
-        - frame: The frame to detect the ArUco marker in.
-        - target_id: The ID of the ArUco marker to find the rvec for.
-        
-        Returns:
-        - The rotation vector (rvec) of the specified ArUco marker, if found. Otherwise, returns None.
-        """
-        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame, self.aruco_dict, parameters=self.parameters)
-        
-        if ids is not None:
-            rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
-            # for i, marker_id in enumerate(ids.flatten()):
-            #     if marker_id == target_id:
-            return rvecs[0]  # Return the rotation vector of the specified marker
-        return None
+
 
     def draw_marker(self, frame, corners, ids):
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
@@ -77,39 +57,24 @@ class ArucoDetector:
                 average_tvec = self.get_average_tvec(id[0])
                 if average_tvec is not None:
                     cv2.drawFrameAxes(frame, self.mtx, self.dist, rvecs[i], tvecs[i], 0.01)
-                    R_j, _ = cv2.Rodrigues(rvecs[i])
-                    # Convert rotation matrix to Euler angles
-                    sy = math.sqrt(R_j[0,0] * R_j[0,0] +  R_j[1,0] * R_j[1,0])
-                    singular = sy < 1e-6
-                    if not singular:
-                        x = math.atan2(R_j[2,1] , R_j[2,2])
-                        y = math.atan2(-R_j[2,0], sy)
-                        z = math.atan2(R_j[1,0], R_j[0,0])
-                    else:
-                        x = math.atan2(-R_j[1,2], R_j[1,1])
-                        y = math.atan2(-R_j[2,0], sy)
-                        z = 0
-                    # Convert to degrees
-                    x = np.degrees(x)
-                    y = np.degrees(y)
-                    z = np.degrees(z)
+                    x, y, z = rvecs[i][0] * 180/3.1315
                     
                     # Prepare texts for overlay, each coordinate on a separate line
                     overlay_texts = [
-                        f"ID {id[0]}: X: {x:.2f}cm",
-                        f"Y: {y:.2f}cm",
-                        f"Z: {z:.2f}cm"
+                        f"ID {id[0]}: ",
+                        f"X: {x:.2f}",
+                        f"Y: {y:.2f}",
+                        f"Z: {z:.2f}"
                     ]
                     
-                    
                     # Get the bottom left corner of the current marker
-                    bottom_left_corner = tuple(corners[i][0][3].astype(int))
+                    bottom_left_corner = tuple(corners[i][0][0].astype(int))
                     
                     # Starting position for the text, adjust as necessary to avoid overlay on the marker
                     text_position = (bottom_left_corner[0] + 20, bottom_left_corner[1] - 10)
                     
                     # Loop through each text line, adjusting the position for each
-                    for line, overlay_text in enumerate(overlay_texts, start=1):
+                    for line, overlay_text in enumerate(overlay_texts[::-1], start=1):
                         line_position = (text_position[0], text_position[1] - 20 * line) # Adjust spacing between lines
                         # Put the text on the frame, one line at a time
                         cv2.putText(frame, overlay_text, line_position, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)

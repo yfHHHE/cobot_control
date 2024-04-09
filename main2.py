@@ -22,6 +22,8 @@ def main():
             video_controller.stop_processing_frame()
             print(1)
             video_controller.align_cam(4)
+
+
         elif key == ord('m'):  # Quit program
             video_controller.onoff()
     

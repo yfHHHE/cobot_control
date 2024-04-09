@@ -6,7 +6,7 @@ from cobot_controller_refactored import MyCobotController
 import time
 from camera_feed import CameraFeed
 import numpy as np
-from test import adjust_robot_arm_orientation
+from test import adjust_robot_arm_orientation,ao
 import threading
 from scipy.spatial.transform import Rotation as R
 import math
@@ -18,6 +18,14 @@ class VideoController:
         self.thread = None
         self.active = False
 
+    def move(self, distance,i): ### Utilising Loops to minimise changes in other coordinates
+        coords= None
+        while not coords:
+            coords = self.mycobot.get_coords()
+            time.sleep(0.5)
+        coords[i] += distance
+        self.mycobot.send_coords(coords, 30, 1)
+    
     def onoff(self):
         if self.mycobot.is_power_on():
             self.mycobot.power_off()
@@ -53,16 +61,66 @@ class VideoController:
         
                 self.active=False
                 break
+            elif key == ord('r'):
+                self.keep_point(4)
+            elif key == ord('y'):
+                print(self.get_rvecs(4))
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
 
     def align_cam(self,target_id):
         self.align_cam_1d(target_id,1)
-        time.sleep(3)
-        self.align_cam_1d(target_id,3)
-        time.sleep(3)
-        self.align_cam_1d(target_id,2)
+        # self.move(40,2)
+        # time.sleep(3)
+        # self.move(-40,0)
+        # time.sleep(3)
+        # self.align_cam_1d(target_id,3)
+        # time.sleep(3)
+        # self.align_cam_1d(target_id,2)
+        # time.sleep(2)
+        # self.align_cam_1d(target_id,1)
+    def get_rvecs(self, target_id):
+        """
+        Collects rvecs from the target ArUco marker over 10 frames and calculates their average.
+        Breaks the loop if the target marker's rvec is None in ten consecutive frames.
+        
+        Parameters:
+        - target_id: The ID of the target ArUco marker.
+        
+        Returns:
+        - The average rvec of the target marker over 10 valid frames, or None if the marker 
+          is not detected or consistently not detected in 10 consecutive frames.
+        """
+        rvecs_collected = []
+        frames_processed = 0
+        consecutive_failures = 0  # Counter for consecutive None rvecs
+        time.sleep(1)
+        while frames_processed < 10 and consecutive_failures < 100:
+            ret, frame = self.camera_feed.get_frame()
+            if not ret:
+                print("Failed to grab frame.")
+                continue
+            rvec = self.detector.get_rvec_of_marker(frame, target_id)
+            if rvec is not None:
+                rvecs_collected.append(rvec[0])  # Assuming rvec[0] because rvec is returned as a 3x1 array
+                frames_processed += 1
+                consecutive_failures = 0  # Reset the failure counter on success
+            else:
+                consecutive_failures += 1  # Increment the failure counter
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):  # Allows for quitting the loop with 'q' key
+                break
+
+        if frames_processed < 10:
+            print("Target marker not detected in 10 frames or detected inconsistently.")
+            return None
+        else:
+            average_rvec = np.mean(rvecs_collected, axis=0)
+            rotation_matrix, _ = cv2.Rodrigues(average_rvec)
+            rotation = R.from_matrix(rotation_matrix)
+            euler_angles_deg = rotation.as_euler('xyz', degrees=True)
+        return euler_angles_deg
 
     def align_cam_1d(self, target_id,ax):
         """
@@ -123,6 +181,26 @@ class VideoController:
         # print(cur_euler)
         # new_euler = adjust_robot_arm_orientation(average_rvec,cur_euler)
         # print(new_euler)
+    def keep_point(self,targets_ids):
+        while True:
+            marker_rvec = self.get_rvecs(targets_ids)
+            y,z,x = marker_rvec
+            if y > 0:
+                y =  180 - y
+            else:
+                y = -180-y
+            z=-z
+            if abs(x) >50 or abs(y) > 45 or abs(z)>50:
+                continue
+            print(x,y,z)
+            arm_angle = None
+            while not arm_angle:
+                arm_angle = self.mycobot.get_coords()
+            adjust_ang = ao([x,y,z],arm_angle[-3:])
+            arm_angle[-3:] = adjust_ang
+            self.mycobot.send_coords(arm_angle,20,1)
+            time.sleep(5)
+            
 
     def align_markers_by_z(self,target_ids):
         detector = ArucoDetector()

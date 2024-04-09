@@ -54,7 +54,41 @@ def apply_pitch_rotation(initial_euler_degrees, pitch_degrees,ax=1):
     new_euler_angles_deg = q_combined.as_euler('xyz', degrees=True)
     
     return new_euler_angles_deg
+def ao(marker_rvec, arm_euler_deg):
+    """
+    Adjust the robot arm's orientation based on a marker's rotation vector and initial arm Euler angles.
+    
+    Parameters:
+    - marker_rvec: The rotation vector of the marker.
+    - arm_euler_deg: The initial Euler angles (in degrees) of the robot arm as [roll, pitch, yaw].
+    
+    Returns:
+    - The adjusted Euler angles of the robot arm as [roll, pitch, yaw] in degrees.
+    """
+    # Convert the marker's rotation vector to a rotation matrix
+    
+    # Create a Rotation object from the rotation matrix of the marker
+    marker_rotation = R.from_euler('xyz', marker_rvec, degrees=True)
+    
+    # Convert the arm's initial Euler angles to a Rotation object
+    arm_rotation = R.from_euler('xyz', arm_euler_deg, degrees=True)
+    
+    # Apply the marker's rotation to the arm's rotation
+    # This assumes the marker's rotation should be applied directly to the arm's current orientation
+    adjusted_rotation = marker_rotation * arm_rotation
+    
+    # Optionally, apply additional adjustments here if needed
+    # For example, to adjust pitch (x), roll (y), and yaw (z) by specific degrees:
+    # additional_rotation = R.from_euler('xyz', [pitch_deg, roll_deg, yaw_deg], degrees=True)
+    # adjusted_rotation = additional_rotation * adjusted_rotation
+    
+    # Convert the final rotation back to Euler angles in degrees
+    adjusted_euler_deg = adjusted_rotation.as_euler('xyz', degrees=True)
+    
+    return adjusted_euler_deg
 
+
+#print("Adjusted Euler angles (roll, pitch, yaw):", adjusted_angles)
 if __name__ == "__main__":
     baudrate=1000000
     mc = MyCobot('/dev/ttyTHS1', baudrate)
@@ -69,7 +103,7 @@ if __name__ == "__main__":
     print(b)
     a = b[-3:]
 
-    na = apply_pitch_rotation(a, 30,3)
+    na = ao([9.63, 7,1.27],a)
 
     b[-3:] = na
 
