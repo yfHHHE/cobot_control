@@ -31,18 +31,18 @@ class VideoController:
             self.mycobot.power_off()
         else:
             self.mycobot.power_on()
-    def start_processing_frame(self):
+    def start_processing_frame(self,ax=1):
         if not self.active:
             self.active = True
             # self.thread = threading.Thread(target=self.process_frame)
             # self.thread.start()
-            self.process_frame()
+            self.process_frame(ax)
     def stop_processing_frame(self):
         self.active = False
         # if self.thread is not None:
         #     self.thread.join()
 
-    def process_frame(self):
+    def process_frame(self,ax):
         detector = ArucoDetector()
         while self.active:
             ret, frame = self.camera_feed.get_frame()
@@ -54,7 +54,7 @@ class VideoController:
         
         # If markers are detected, draw them
             if ids is not None:
-                detector.draw_marker(frame, corners, ids)
+                detector.draw_marker(frame, corners, ids,ax)
             key = cv2.waitKey(1) & 0xFF
         
             if key == ord('o'):  # Start processing
@@ -62,7 +62,7 @@ class VideoController:
                 self.active=False
                 break
             elif key == ord('r'):
-                self.keep_point(4)
+                self.keep_point(6)
             elif key == ord('y'):
                 print(self.get_rvecs(4))
             cv2.imshow('Live Video Feed', frame)
@@ -184,13 +184,17 @@ class VideoController:
     def keep_point(self,targets_ids):
         while True:
             marker_rvec = self.get_rvecs(targets_ids)
+            if marker_rvec is None:
+                print("no Aruco code detected")
+                break
             y,z,x = marker_rvec
             if y > 0:
                 y =  180 - y
             else:
                 y = -180-y
             z=-z
-            if abs(x) >50 or abs(y) > 45 or abs(z)>50:
+            if abs(x) >20 or abs(y) > 45 or abs(z)>20:
+                print("too tilted")
                 continue
             print(x,y,z)
             arm_angle = None

@@ -63,12 +63,12 @@ class ArucoDetector:
         
         if ids is not None:
             rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
-            # for i, marker_id in enumerate(ids.flatten()):
-            #     if marker_id == target_id:
-            return rvecs[0]  # Return the rotation vector of the specified marker
+            for i, marker_id in enumerate(ids.flatten()):
+                if marker_id == target_id:
+                    return rvecs[i]  # Return the rotation vector of the specified marker
         return None
 
-    def draw_marker(self, frame, corners, ids):
+    def draw_marker(self, frame, corners, ids,ax):
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
         if ids is not None and corners is not None:
             rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
@@ -90,9 +90,13 @@ class ArucoDetector:
                         y = math.atan2(-R_j[2,0], sy)
                         z = 0
                     # Convert to degrees
-                    x = np.degrees(x)
-                    y = np.degrees(y)
-                    z = np.degrees(z)
+                    if ax == 1:
+                        x = np.degrees(x)
+                        y = np.degrees(y)
+                        z = np.degrees(z)
+                    elif ax == 2:
+                        x,y,z = average_tvec
+
                     
                     # Prepare texts for overlay, each coordinate on a separate line
                     overlay_texts = [

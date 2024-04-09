@@ -24,8 +24,32 @@ class CameraFeed:
         self.running = False 
         self.read_thread.join()
         self.cap.release()
+    def harris_corner_detection_filter(self,frame):
+        # Convert frame to grayscale if not already
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Detect corners using Harris Corner Detector
+        corners = cv2.cornerHarris(gray_frame, 2, 3, 0.04)
+        # Mark corners on the original frame
+        frame[corners > 0.01 * corners.max()] = [0, 0, 255]
+        return frame
 
+    def non_local_means_denoising_filter(self,frame):
+        # Apply Non-local Means Denoising
+        denoised_frame = cv2.fastNlMeansDenoisingColored(frame, None, 10, 10, 7, 21)
+        return denoised_frame
+    def gaussian_pyramid_filter(self,frame):
+        # Apply Gaussian pyramid
+        pyramid = cv2.pyrDown(frame)
+        return cv2.pyrUp(pyramid)
+
+    def gaussian_blur_filter(self,frame):
+        # Apply Gaussian blur
+        blurred_frame = cv2.GaussianBlur(frame, (5, 5), 0)
+        return blurred_frame
     def preprocess_frame_for_detection(self, frame):
+        # frame1 = self.gaussian_pyramid_filter(frame)
+        # frame2 = self.gaussian_blur_filter(frame1)
+        # return frame2
         grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
         # Apply mild Gaussian Blur to reduce noise while preserving edges

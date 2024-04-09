@@ -12,6 +12,8 @@ def main():
         
         if key == ord('p'):  # Start processing
             video_controller.start_processing_frame()  # Make sure this method sets `self.active` to True and starts the loop
+        if key == ord('o'):  # Start processing
+            video_controller.start_processing_frame(2)  # Make sure this method sets `self.active` to True and starts the loop
         elif key == ord('b'):  # Stop processing and align markers
             video_controller.stop_processing_frame()  # This should stop the frame processing loop
             video_controller.align_markers_by_z([1,2])
