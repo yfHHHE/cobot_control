@@ -95,7 +95,7 @@ class ArucoDetector:
                         y = np.degrees(y)
                         z = np.degrees(z)
                     elif ax == 2:
-                        x,y,z = average_tvec
+                        x,y,z = average_tvec*100
 
                     
                     # Prepare texts for overlay, each coordinate on a separate line

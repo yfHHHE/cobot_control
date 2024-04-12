@@ -203,7 +203,7 @@ class VideoController:
             adjust_ang = ao([x,y,z],arm_angle[-3:])
             arm_angle[-3:] = adjust_ang
             self.mycobot.send_coords(arm_angle,20,1)
-            time.sleep(5)
+            time.sleep(3)
             
 
     def align_markers_by_z(self,target_ids):

@@ -5,7 +5,7 @@ from pymycobot.mycobot import MyCobot
 import time
 import math
 
-class VideoController:
+class VideoController:                            
     def __init__(self, video_source=0):
         self.detector = ArucoDetector()
         self.mycobot = MyCobot('/dev/ttyTHS1', 1000000)
