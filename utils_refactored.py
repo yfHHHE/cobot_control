@@ -6,7 +6,7 @@ from cobot_controller_refactored import MyCobotController
 import time
 from camera_feed import CameraFeed
 import numpy as np
-from test import adjust_robot_arm_orientation,ao
+from test import adjust_robot_arm_orientation,ao,ao2
 import threading
 from scipy.spatial.transform import Rotation as R
 import math
@@ -62,9 +62,9 @@ class VideoController:
                 self.active=False
                 break
             elif key == ord('r'):
-                self.keep_point(6)
+                self.keep_point(13)
             elif key == ord('y'):
-                print(self.get_rvecs(4))
+                print(self.get_rvecs(11))
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
@@ -188,19 +188,20 @@ class VideoController:
                 print("no Aruco code detected")
                 break
             y,z,x = marker_rvec
+            x = -(x+90)
             if y > 0:
                 y =  180 - y
             else:
                 y = -180-y
             z=-z
-            if abs(x) >20 or abs(y) > 45 or abs(z)>20:
+            if abs(x) >50 or abs(y) > 45 or abs(z)>50:
                 print("too tilted")
                 continue
             print(x,y,z)
             arm_angle = None
             while not arm_angle:
                 arm_angle = self.mycobot.get_coords()
-            adjust_ang = ao([x,y,z],arm_angle[-3:])
+            adjust_ang = ao2(arm_angle[-3:],[x,y,z])
             arm_angle[-3:] = adjust_ang
             self.mycobot.send_coords(arm_angle,20,1)
             time.sleep(3)

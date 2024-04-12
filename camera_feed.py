@@ -53,18 +53,18 @@ class CameraFeed:
         grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
         # Apply mild Gaussian Blur to reduce noise while preserving edges
-        blurred = cv2.GaussianBlur(grayscale, (3, 3), 0)
+        # blurred = cv2.GaussianBlur(grayscale, (3, 3), 0)
         
-        # Enhance edges using adaptive thresholding
-        # sharp_edges = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        #                                     cv2.THRESH_BINARY, 11, 5)
+        # # Enhance edges using adaptive thresholding
+        # # sharp_edges = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+        # #                                     cv2.THRESH_BINARY, 11, 5)
         
-        # Optional: Enhance contrast using CLAHE
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        contrast_enhanced = clahe.apply(blurred)
+        # # Optional: Enhance contrast using CLAHE
+        # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        # contrast_enhanced = clahe.apply(blurred)
         
         # Note: The following step of Canny edge detection is shown as an illustrative option.
         # It might not be directly beneficial for ArUco detection as it produces an edge map, not a grayscale image.
         # edges = cv2.Canny(contrast_enhanced, 100, 200)
     
-        return contrast_enhanced
+        return grayscale

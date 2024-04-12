@@ -86,25 +86,109 @@ def ao(marker_rvec, arm_euler_deg):
     adjusted_euler_deg = adjusted_rotation.as_euler('xyz', degrees=True)
     
     return adjusted_euler_deg
+def ao2(euler_angles_deg, rvec):
+    """
+    Apply a rotation vector to the Euler angles of a robot arm to get a new orientation.
+
+    Parameters:
+    - euler_angles_deg: Current Euler angles of the robot arm as [roll, pitch, yaw] in degrees.
+    - rvec: Rotation vector as [a, b, c], representing the axis-angle rotation (Rodrigues' rotation formula).
+
+    Returns:
+    - New Euler angles after applying the rotation vector, in degrees.
+    """
+    # Convert current Euler angles to a rotation object
+    current_rotation = R.from_euler('xyz', euler_angles_deg, degrees=True)
+    
+    # Create a rotation object from the rotation vector
+    additional_rotation = R.from_euler('xyz', rvec, degrees=True)
+    
+    # Combine the rotations
+    new_rotation = additional_rotation * current_rotation
+    
+    # Convert the combined rotation back to Euler angles in degrees
+    new_euler_angles_deg = new_rotation.as_euler('xyz', degrees=True)
+    return new_euler_angles_deg
 
 
-#print("Adjusted Euler angles (roll, pitch, yaw):", adjusted_angles)
+def euler_to_direction_vector(euler_angles_deg):
+    """
+    Convert Euler angles (in degrees) to a direction vector along which the end effector is pointing.
+    
+    Parameters:
+    - euler_angles_deg: tuple or list of three numbers representing the Euler angles (roll, pitch, yaw).
+    
+    Returns:
+    - A unit vector representing the direction in which the end effector is pointing.
+    """
+    # Convert Euler angles to a rotation matrix
+    rotation = R.from_euler('xyz', euler_angles_deg, degrees=True)
+    rotation_matrix = rotation.as_matrix()
+    
+    # In most robotic systems, the z-axis is the forward direction
+    forward_direction = rotation_matrix @ np.array([0, 0, 1])  # Column for z-axis in rotation matrix
+    return forward_direction
+
+def move_robot_arm(current_position, direction_vector, distance):
+    """
+    Calculate the new position of the robot arm by moving it along the direction it is pointing.
+    
+    Parameters:
+    - current_position: Current position of the robot arm's end effector as a 3-element list or array.
+    - direction_vector: Unit vector representing the direction to move.
+    - distance: Distance to move along the direction vector.
+    
+    Returns:
+    - New position of the robot arm's end effector as a 3-element array.
+    """
+    # Compute the new position by adding the scaled direction vector to the current position
+    new_position = current_position + distance * direction_vector
+    return new_position
+def rotate_around_forward_axis(euler_angles_deg, angle_deg):
+    """
+    Rotate the end effector around the axis it is currently pointing by a specified angle.
+    
+    Parameters:
+    - euler_angles_deg: Current Euler angles of the robot arm's tip as [roll, pitch, yaw].
+    - angle_deg: The angle in degrees to rotate around the forward axis.
+    
+    Returns:
+    - A new set of Euler angles after the rotation.
+    """
+    # Get the forward direction vector from current Euler angles
+    forward_direction = euler_to_direction_vector(euler_angles_deg)
+    
+    # Current rotation from Euler angles
+    current_rotation = R.from_euler('xyz', euler_angles_deg, degrees=True)
+    
+    # Create a rotation about the forward axis by the specified angle
+    additional_rotation = R.from_rotvec(forward_direction * np.deg2rad(angle_deg))
+    
+    # Combine the current rotation with the additional rotation
+    new_rotation = additional_rotation * current_rotation
+    
+    # Convert back to Euler angles
+    new_euler_angles_deg = new_rotation.as_euler('xyz', degrees=True)
+    return new_euler_angles_deg
 if __name__ == "__main__":
     baudrate=1000000
     mc = MyCobot('/dev/ttyTHS1', baudrate)
-
-    # # # #mc.send_angles([0,0,0,40,0,-50],20)
+    mc.power_on()
+    time.sleep(1)
+    #mc.send_angles([43.15, 20.12, -72.15, 8.52, -32.16, 7.11],20)
     # # # # time.sleep(3)
     # # # # a = [0,0,0,0,0,-50]
     # # # # mc.send_angles(a,20)
     # # mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
     # # # time.sleep(1)
     b = mc.get_coords()
-    print(b)
     a = b[-3:]
+    c = b[:3]
+    po = euler_to_direction_vector(a)
+    nc = move_robot_arm(c,po,-20)
+    b[:3] = nc
+    # na = ao2(a,[-30,-3,2])
 
-    na = ao([9.63, 7,1.27],a)
-
-    b[-3:] = na
+    # b[-3:] = na
 
     mc.send_coords(b,20,0)
