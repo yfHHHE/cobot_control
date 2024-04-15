@@ -66,31 +66,32 @@ class VideoController:
             elif key == ord('y'):
                 print(self.get_rvecs(11))
             elif key == ord('w'):
-                self.movetip(1,10)
+                self.movetip(1,20)
                 time.sleep(1)
             elif key == ord('a'):
-                self.movetip(0,-10)
+                self.movetip(0,-20)
                 time.sleep(1)
             elif key == ord('s'):
-                self.movetip(1,-10)
+                self.movetip(1,-20)
                 time.sleep(1)       
             elif key == ord('d'):
-                self.movetip(0,10)
+                self.movetip(0,20)
                 time.sleep(1)
             elif key == ord('q'):
-                self.movetip(2,10)
+                self.movetip(2,20)
                 time.sleep(1)
             elif key == ord('e'):
-                self.movetip(2,-10)
+                self.movetip(2,-20)
                 time.sleep(1)
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
 
     def movetip(self,ax,dis):
-        b = None
-        while b is None:
+        b = []
+        while not b:
             b = self.mycobot.get_coords()
+            time.sleep(0.1)
         a = b[-3:]
         c = b[:3]
         rot = R.from_euler('xyz', a, degrees=True)
@@ -103,22 +104,23 @@ class VideoController:
         self.send_c(b)
     
     def send_c(self,coords):
-        self.mycobot.send_coords(coords,20,0)
         time.sleep(1)
+        co = coords
+        self.mycobot.send_coords(co,20,0)
         while True:
-            b=None
-            while b is None:
+            b=[]
+            while not b:
                 b = self.mycobot.get_coords()
             d1 = b[0]-coords[0]
             d2 = b[1]-coords[1]
             d3 = b[2]-coords[2]
             if abs(d1)<2 and abs(d2)<2 and abs(d3)<2:
                 break
-            coords[0] -= d1
-            coords[1] -= d2
-            coords[2] -= d3
-            self.mycobot.send_coords(coords,20,0)
-            time.sleep(1)
+            co[0] -= d1
+            co[1] -= d2
+            co[2] -= d3
+            self.mycobot.send_coords(co,50,0)
+            time.sleep(3)
 
 
 

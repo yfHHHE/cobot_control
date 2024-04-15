@@ -183,13 +183,14 @@ if __name__ == "__main__":
     # # mc.send_coords([45.6, -60.5, 339.0, -3.87, 1.41, 171],20,1)
     # # # time.sleep(1)
     b = mc.get_coords()
-    a = b[-3:]
-    c = b[:3]
-    po = euler_to_direction_vector(a)
-    nc = move_robot_arm(c,po,-10)
-    b[:3] = nc
-    # na = ao2(a,[-30,-3,2])
+    print(b)
+    # a = b[-3:]
+    # c = b[:3]
+    # po = euler_to_direction_vector(a)
+    # nc = move_robot_arm(c,po,-10)
+    # b[:3] = nc
+    # # na = ao2(a,[-30,-3,2])
 
-    # b[-3:] = na
+    # # b[-3:] = na
 
-    mc.send_coords(b,20,0)
+    # mc.send_coords(b,20,0)
