@@ -99,10 +99,11 @@ class VideoController:
         dirc[ax] = 1 # ax = 2 for z; 0 for x; 1 for y
         forward_direction = rotation_matrix @ np.array(dirc)
         newp = c+dis * forward_direction
-        self.send_c(newp)
+        b[:3] = newp
+        self.send_c(b)
     
     def send_c(self,coords):
-        self.mycobot.send_coords(coords,20,1)
+        self.mycobot.send_coords(coords,20,0)
         time.sleep(1)
         while True:
             b=None
@@ -116,7 +117,7 @@ class VideoController:
             coords[0] -= d1
             coords[1] -= d2
             coords[2] -= d3
-            self.mycobot.send_coords(coords,20,1)
+            self.mycobot.send_coords(coords,20,0)
             time.sleep(1)
 
 
