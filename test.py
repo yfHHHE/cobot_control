@@ -173,9 +173,10 @@ def rotate_around_forward_axis(euler_angles_deg, angle_deg):
 if __name__ == "__main__":
     baudrate=1000000
     mc = MyCobot('/dev/ttyTHS1', baudrate)
-    mc.power_on()
+    # mc.power_off()
     time.sleep(1)
-    #mc.send_angles([43.15, 20.12, -72.15, 8.52, -32.16, 7.11],20)
+    # print(mc.get_angles())
+    # mc.send_angles([41.3, 37.61, -73.03, -4.57, -29.44, -25.75],20)
     # # # # time.sleep(3)
     # # # # a = [0,0,0,0,0,-50]
     # # # # mc.send_angles(a,20)
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     a = b[-3:]
     c = b[:3]
     po = euler_to_direction_vector(a)
-    nc = move_robot_arm(c,po,-20)
+    nc = move_robot_arm(c,po,-10)
     b[:3] = nc
     # na = ao2(a,[-30,-3,2])
 

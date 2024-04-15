@@ -62,7 +62,7 @@ class VideoController:
                 self.active=False
                 break
             elif key == ord('r'):
-                self.keep_point(13)
+                self.keep_point(8)
             elif key == ord('y'):
                 print(self.get_rvecs(11))
             cv2.imshow('Live Video Feed', frame)
@@ -188,7 +188,7 @@ class VideoController:
                 print("no Aruco code detected")
                 break
             y,z,x = marker_rvec
-            x = -(x+90)
+            #x = -(x+90)
             if y > 0:
                 y =  180 - y
             else:
@@ -205,7 +205,11 @@ class VideoController:
             arm_angle[-3:] = adjust_ang
             self.mycobot.send_coords(arm_angle,20,1)
             time.sleep(3)
+            break
             
+    def reset(self):
+        self.mycobot.send_angles([41.3, 37.61, -73.03, -4.57, -29.44, -25.75],20)
+
 
     def align_markers_by_z(self,target_ids):
         detector = ArucoDetector()
