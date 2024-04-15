@@ -173,7 +173,7 @@ def rotate_around_forward_axis(euler_angles_deg, angle_deg):
 if __name__ == "__main__":
     baudrate=1000000
     mc = MyCobot('/dev/ttyTHS1', baudrate)
-    # mc.power_off()
+    mc.power_off()
     time.sleep(1)
     # print(mc.get_angles())
     # mc.send_angles([41.3, 37.61, -73.03, -4.57, -29.44, -25.75],20)

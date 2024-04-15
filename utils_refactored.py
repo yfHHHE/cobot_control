@@ -65,9 +65,62 @@ class VideoController:
                 self.keep_point(8)
             elif key == ord('y'):
                 print(self.get_rvecs(11))
+            elif key == ord('w'):
+                self.movetip(1,10)
+                time.sleep(1)
+            elif key == ord('a'):
+                self.movetip(0,-10)
+                time.sleep(1)
+            elif key == ord('s'):
+                self.movetip(1,-10)
+                time.sleep(1)       
+            elif key == ord('d'):
+                self.movetip(0,10)
+                time.sleep(1)
+            elif key == ord('q'):
+                self.movetip(2,10)
+                time.sleep(1)
+            elif key == ord('e'):
+                self.movetip(2,-10)
+                time.sleep(1)
             cv2.imshow('Live Video Feed', frame)
 
             # Break the loop if 'q' is pressed
+
+    def movetip(self,ax,dis):
+        b = None
+        while b is None:
+            b = self.mycobot.get_coords()
+        a = b[-3:]
+        c = b[:3]
+        rot = R.from_euler('xyz', a, degrees=True)
+        rotation_matrix = rot.as_matrix()
+        dirc = [0,0,0]
+        dirc[ax] = 1 # ax = 2 for z; 0 for x; 1 for y
+        forward_direction = rotation_matrix @ np.array(dirc)
+        newp = c+dis * forward_direction
+        self.send_c(newp)
+    
+    def send_c(self,coords):
+        self.mycobot.send_coords(coords,20,1)
+        time.sleep(1)
+        while True:
+            b=None
+            while b is None:
+                b = self.mycobot.get_coords()
+            d1 = b[0]-coords[0]
+            d2 = b[1]-coords[1]
+            d3 = b[2]-coords[2]
+            if abs(d1)<2 and abs(d2)<2 and abs(d3)<2:
+                break
+            coords[0] -= d1
+            coords[1] -= d2
+            coords[2] -= d3
+            self.mycobot.send_coords(coords,20,1)
+            time.sleep(1)
+
+
+
 
     def align_cam(self,target_id):
         self.align_cam_1d(target_id,1)

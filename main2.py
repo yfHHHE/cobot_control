@@ -10,7 +10,7 @@ def main():
     while True:
         key = cv2.waitKey(1) & 0xFF
         
-        if key == ord('p'):  # Start processing
+        if key == ord('p'):  # Start processingmr
             video_controller.start_processing_frame()  # Make sure this method sets `self.active` to True and starts the loop
         if key == ord('o'):  # Start processing
             video_controller.start_processing_frame(2)  # Make sure this method sets `self.active` to True and starts the loop
